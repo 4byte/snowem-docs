@@ -1,0 +1,9 @@
+site_name: Snowem Documentation
+pages:
+  - Get Started: get_started.md
+  - API Reference:
+    - Snowem Setup: sdk.md
+    - Channel Management: channelmgr.md
+    - Stream Management: streammgr.md
+  - About: about.md
+theme: readthedocs
