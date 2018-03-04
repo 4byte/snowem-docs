@@ -62,7 +62,7 @@ ice_key_file = "<path-to>/ice_privkey.pem"
 log_level = 0
 ```
 
-Note: one may find configuration sample file at [snowem.conf](https://github.com/jackiedinh8/snowem/blob/master/sample/snowem.conf). You may follow the below instruction to generate certificates for and media servers. For secure websocket, you can get fre certificate service from [letenscrypts](https://letsencrypt.org).  
+Note: one may find configuration sample file at [snowem.conf](https://github.com/jackiedinh8/snowem/blob/master/sample/snowem.conf). You may follow the below instruction to generate certificates for and media servers. For secure websocket, you can get free certificate service from [letenscrypts](https://letsencrypt.org).  
 
 ```
 openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout privateKey.key -out certificate.crt

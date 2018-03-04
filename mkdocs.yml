@@ -5,5 +5,5 @@ pages:
     - Snowem Setup: sdk.md
     - Channel Management: channelmgr.md
     - Stream Management: streammgr.md
-  - Resouces: resources.md
+  - Resources: resources.md
 theme: readthedocs
