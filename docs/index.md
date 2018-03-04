@@ -1,7 +1,7 @@
-This document is intended to help developers set up Snowem service and write a simple application.
+This document is intended to help developers set up Snowem service and write web applications.
 
 ## Introduction
-Snowem is a lightweight live streaming server, based on webrtc technology. Basically, a video stream is identified by a channel id - an integer. Snowem has three built-in subsystems, which are designed for developers to easily integrate video streams into their applictions. 
+Snowem is a lightweight live streaming server, based on webrtc technology. Basically, a video stream is identified by a channel id - an integer. Snowem has three built-in subsystems, which are designed for developers to easily integrate media streams into web applictions. 
 
  * `RESTful Web Service` is used for channel management.
  * `Websocket Sevrer` plays a role of signaling service in WebRTC stack.

@@ -1,6 +1,6 @@
 site_name: Snowem Documentation
 pages:
-  - Get Started: get_started.md
+  - Get Started: index.md
   - API Reference:
     - Snowem Setup: sdk.md
     - Channel Management: channelmgr.md
