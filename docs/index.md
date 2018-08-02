@@ -166,7 +166,7 @@ SnowSDK.createChannel(config, onSuccess, onError);
 ### Further Resource
 
 Check out our javascript sdk [here](https://github.com/snowem/sdkjs/blob/master/js/app.js) for more details of using th sdk.  
-For full documentation, check [here](sdk.md).
+For full documentation, check [here](https://docs.snowem.io).
 
 
 
