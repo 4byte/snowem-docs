@@ -1,144 +1,60 @@
 
-Welcome to the Snowem's API documentation. 
+Welcome to the Snowem API Reference!
 
-### Create Peer object
+### SnowSDK object
+SnowSDK is a global object which is used to send request/receive response from Snowem REST Service.
 
-To publish or play a video stream, you need to create a Peer object. The Peer object provides all APIs to work with video streams. To create Peer object, one needs to provide configurataion for it.  
+| Method | Description | Usage   
+| --------- | ----------- | -------------  
+| init | Set global config such as server address, etc | SnowSDK.init(config)  
+| createChannel | Create a channel at snowem server | SnowSDK.createChannel(config)  
+| queryChannel | Query channel info from snowem server | SnowSDK.queryChannel(config)  
+| deleteChannel | Delete channel info from snowem server | SnowSDK.deleteChannel(config)  
 
-**Syntax**  
 
-```
-var peer = SnowSDK.createPeer(config)  
-```
+### Channel object
+Channel is an object which is used to publish/play streams within a channel using Snowem Websocket Service as signaling part.
 
-**Input**  
+| Field | Description   
+| --------- | -----------  
+| id | Channel identification  
+| name | Channel name  
+| key | Channel key string  
+| ipaddr | IP address of Snowem Websocket Service   
+| port | Port of Snowem Websocket Service   
+| type | Channel type: "broadcast", "conference" and "p2p"   
+| isReady | Status of channel   
+| publishStreams | List of local published streams   
+| remoteStreams | List of remote published streams   
 
-| Parameter | Default | Description  
-| --------- | ------- | -----------  
-| servername | none | The domain name of snowem server.  
-| port | 443 | Port number on which snowem server listens  
-| media_constraints | "" | Webrtc media settings. For details, see here.  
-| peerconnection_config | "" | Webrtc peerconnection settings. For details, see here.  
-| sdp_constraints | "" | Webrtc sdp settings. For details, see here.  
+| Method | Description | Usage   
+| --------- | ----------- | -------------  
+| connect | Connect to snowem server using websocket. Room name is needed. On return, room id is used to communicate with snowem server |  
+| disconnect | Disconnect a channel from snowem server |  
+| sendMsg | Send messages to snowem server. It is used by stream.sendMsg to impl signaling communication |  
+| sendChannelMsg | Broadcast messages to a channel. The event channel.onChannelMessag will be triggered at other endpoints |  
+| publish | Publish a stream to snowem server. It initiates ice handshake for a stream. When ice connection is established on a stream, event stream.onConnected will be triggered |  
+| play | Play a remote stream |  
+| stop | Stop a stream from publishing or playing |  
+| listen | Set up listeners on the following events: |  
+|  | Event channel.onConnected is trigger when websocket is connected |  
+|  | Event channel.onDisconnected is triggered when websocket is disconnected |  
+|  | Event channel.onAddStream is triggered when a remote stream is published on server |  
+|  | Event channel.onRemoveStream is triggered when a remote stream is removed on server |  
+|  | Event channel.onChannelMessage is triggered when there is message from server|  
 
-Note: you must define `servername` in configuration parameters.  
+### Stream object
 
-**Return Value**  
-
-On success, a _peer_ object is return, null otherwise.  
-
-**Example Usage**  
-
-```javascript
-var config = { 
-   'servername': "snowem.example.com",
-   'port': 443,
-   'media_constraints' : { audio: true, 
-                           video: {
-                              mandatory:{
-                                 maxWidth: 480,
-                                 maxHeight: 270,
-                                 minWidth: 480,
-                                 minHeight: 270 
-                          }}},
-    'peerconnection_config' : {'iceServers':[{'urls':'stun:stun.l.google.com:19302',
-                                                   'urls':'stun:stun1.l.google.com:19302'}],
-                                    'iceTransports': 'all'},
-    'sdp_constraints' : {'mandatory': {
-         'OfferToReceiveAudio':true,
-         'OfferToReceiveVideo':true }}
-   }   
-
-var peer = SnowSDK.createPeer(config);
-
-```
-
-### Create A Channel
-
-Basically, a video stream is identified by a channel id - an integer.  
-
-**Syntax**  
-```
-peer.createChannel(configuration, callback)  
-```
-
-**Input**
-
-| Parameter | Default | Description  
-| --------- | ------- | -----------  
-| name | "" | Name of channel.  
-
-**Return Value**  
-On success, _callback_ will be called with Peer object as its first argument. Note that Peer object also containt valid channel id.
-
-**Example Usage**
-
-```
-function onChannelCreated(peer) {
-  // example of publish a strem
-  var settings = { 
-     'channelid': peer.channelId,
-     'localVideoId': document.getElementById('localVideo'),
-     'remoteVideoId': null
-  };  
-  peer.publish(settings);
-}
-peer.createChannel({name: "demo"},onChannelCreated);  
-```
-
-### Publish A Channel
-
-**Syntax**  
-
-```
-peer.publish(settings)  
-```
-
-**Input**
-| Parameter | Default | Description  
-| --------- | ------- | -----------  
-| channelid | none | Channel ID of Peer object.  
-| localVideoId | none | ID of video tag which local stream will attach to.  
-
-**Return Value**  
-
-**Example Usage**  
-
-```
-var settings = { 
-   'channelid': peer.channelId,
-   'localVideoId': document.getElementById('localVideo')
-};  
-peer.publish(settings);
-```
-
-### Play A Channel
-
-**Syntax**  
-
-```
-peer.play(settings)  
-```
-
-**Input**
-| Parameter | Default | Description  
-| --------- | ------- | -----------  
-| channelid | none | Channel ID of Peer object.  
-| remoteVideoId | none | ID of video tag which remote stream will attach to.  
-
-**Return Value**  
-
-**Example Usage**  
-
-```
-var settings = { 
-   'channelid': peer.channelId,
-   'remoteVideoId': document.getElementById('remoteVideo')
-};  
-peer.publish(settings);
-
-```
-
+| Method | Description | Usage   
+| --------- | ----------- | -------------  
+| init | Set media settings such as audio, video, data and their properties |  
+| publish | Publish a local stream to Snowem server |  
+| play | Play a stream (it couble be local or remote) |  
+| stop | Stop publishing/playing a stream |  
+| listen | Set up listeners on the following events: |  
+|  | Event stream.onMessage is triggered when there is message from remote endpoints |  
+|  | Event stream.onConnected is triggered when ICE connection is established |  
+|  | Event stream.onReady is triggered when media is ready for playing |  
 
 
 

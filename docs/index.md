@@ -1,7 +1,7 @@
 This document is intended to help developers set up Snowem service and write web applications.
 
-## Introduction
-Snowem is a lightweight live streaming server, based on webrtc technology. Basically, a video stream is identified by a channel id - an integer. Snowem has three built-in subsystems, which are designed for developers to easily integrate media streams into web applictions. 
+### Introduction
+Snowem is a lightweight live streaming server, based on webrtc technology. Snowem has three built-in subsystems, which are designed for developers to easily integrate media streams into web applictions. 
 
  * `RESTful Web Service` is used for channel management.
  * `Websocket Sevrer` plays a role of signaling service in WebRTC stack.
@@ -9,7 +9,7 @@ Snowem is a lightweight live streaming server, based on webrtc technology. Basic
 
 Let's start to setup Snowem.
 
-## Compile and setup Snowem
+### Snowem Installation
 
 Snowem depends on the following libraries to build:  
 
@@ -19,7 +19,8 @@ Snowem depends on the following libraries to build:
  * libjansson.  
  * libsofia-sip-ua.  
  * libsrtp.  
- * libconfig.
+ * libconfig.  
+ * libbsd.
 
 Notes: 
 
@@ -28,7 +29,7 @@ Notes:
 ```
 apt-get install libssl1.0.0 libssl-dev libevent-dev libsofia-sip-ua-dev\
 libsofia-sip-ua0 libsrtp0 libsrtp0-dev libjansson-dev libjansson4\
-libnettle6 nettle-dev libconfig9 libconfig-dev
+libnettle6 nettle-dev libconfig9 libconfig-dev libbsd0 libbsd-dev
 ```
  
  * for installing libevent 2.1.xx, one may do the following:  
@@ -46,6 +47,8 @@ To build Snowem, execute the following commands:
 ```
 git clone https://github.com/jackiedinh8/snowem.git
 cd snowem
+git submodule init
+git submodule update
 mkdir build
 cd build
 cmake ..
@@ -74,23 +77,35 @@ Note: one may find configuration sample file at [snowem.conf](https://github.com
 snowem <path-to>/snowem.conf
 ```
 
-## A Quick Start
+### Setup Demo 
 
-Check out web application [here](https://github.com/jackiedinh8/snowem/tree/master/html), put it in your prefer web server.  
-Steps to integrate video streams:
+Assume snowem server runs on ip address x.y.z.t. Login to that server, if you do not have nodejs and express framework, install them:
+```
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+Download demp application from javascript sdkand modify js/app.js to point to correct Snowem server by setting 'wss_ip' to x.y.z.t.
+```
+git clone https://github.com/snowem/sdkjs.git
+cd sdkjs
+npm install
+node index.js
+```
+Open chrome browser on https://x.y.z.t:8000.
+
+### SDK Integration
+Steps to integrate video streams using javascript sdk.  
 
 **Step 1**: Integrate directly SnowSDK javascript sdk into your web application.    
-When SnowSDK is loaded, it invokes _snowAsyncInit_ if it is defined. Once it is called, you can initlialize SnowSDK with _init_ function. The _init_ function requires domain name or ip address of Snowem Websocket Service.
+When SnowSDK is loaded, it invokes snowAsyncInit if it is defined. Once it is called, you can initlialize SnowSDK with init function. The init function requires domain name or ip address of Snowem Websocket Service.
 
 ```
-(function(d){
-  var js, id = 'snowsdk', ref = d.getElementsByTagName('script')[0];
-  if (d.getElementById(id)) {return;}
-  js = d.createElement('script'); js.id = id; js.async = true;
-  js.src = "https://snowem.io/js/snowsdk.js";
-  ref.parentNode.insertBefore(js, ref);
-}(document));
+// put these lines in your html code.
+<script type="text/javascript" src="js/adapter.js"></script>
+<script type="text/javascript" src="js/snowsdk.js"></script>
+```
 
+```
 window.snowAsyncInit = function() {
   var config = { 
     'ip': "your-wss-ip",
@@ -105,79 +120,53 @@ function start_app() {
 }
 ```
 
-**Step 2**: Create a channel.  
-To publish a video stream, one need to get a channel id from Snowem server. 
+**Step 2**: Create Stream object.  
+Stream object is used to capture media content from camera or html video tag.
 
 ```
-var config = { 
-  'name': "snowem test room",
-  'type': "broadcast"
-  }   
-function onSuccess(resp) {
-  console.log("resp: " + resp.channelid);
-  //for example, use channel id to publish your media stream
+var config = {
+  'audio': true,
+  'video': true
+ };
+ var stream = new SnowSDK.Stream(config);
+```
+
+**Step 3**: Create a channel and publish/play a stream Channel object is used to communicate with snowem server. Once a channel is obtained, local stream can be published on it or remote stream can be locally played.
+
+```
+function onSuccess(channel) {
+  // channel object contain all needed info, see docs for details
+  channel.listen("onConnected", function() {
+   // after successfully connecting to snowem server, a stream can be published on the channel.
+   channel.publish(existingStream);
+  }); 
+
+  channel.listen("onAddStream", function(stream) {
+   // stream object contain media stream which can be play by channel.play
+   channel.play(stream);
+  }); 
+
+  channel.listen("onRemoveStream", function(stream) {
+   // stream object to be removed.
+  }); 
+  // connect channel to snowem server.
+  channel.connect();  
 }
 function onError(resp) {
   console.log("resp: " + resp);
 }
-SnowSDK.createChannel(config, onSuccess, onError);
-```
-
-**Step 3**: Create PeerAgent object.   
-A PeerAgent object is used to establish connection to built-in websocket server and do all signaling part for WebRTC stack working.  
-
-```
 var config = { 
-   'media_constraints' : { audio: true, 
-                           video: {
-                              mandatory:{
-                                 maxWidth: 480,
-                                 maxHeight: 270,
-                                 minWidth: 480,
-                                 minHeight: 270 
-                          }}},
-    'peerconnection_config' : {'iceServers':[{'urls':'stun:stun.l.google.com:19302',
-                                                   'urls':'stun:stun1.l.google.com:19302'}],
-                                    'iceTransports': 'all'},
-    'sdp_constraints' : {'mandatory': {
-         'OfferToReceiveAudio':true,
-         'OfferToReceiveVideo':true }}
-   }   
-var peer = new SnowSDK.PeerAgent(config);
-```
-
-**Step 4**: Publish a video stream to a channel.   
-
-After successful creating channel and PeerAgent object, one can publish a video stream.
-
-``` javascript
-var settings = { 
-   'channelid': peer.channelId, 
-   'local_video_elm': document.getElementById('localVideo')
-};  
-peer.onAddPeerStream = function(info) {
-  console.log("peerid: ", info.peerid);
-  //make use of remote stream
-  //remote_video_elm.srcObject = info.stream;
-}
-peer.onRemovePeerStream = function(info) {
-  console.log("removing stream from peerid: " + info.peerid);
-}
-peer.publish(settings);
-```
-
-**Step 5**: Play a video stream  
-
-One can play a video stream with a given channel id.
-
-```
-peer.play(channelid);
+  'name': "test",
+  'type': "conference",
+  'key': "none"
+}  
+SnowSDK.createChannel(config, onSuccess, onError);
 ```
 
 ### Further Resource
 
-Check complete source code of the sample [here](https://github.com/jackiedinh8/snowem/blob/master/html/js/app.js).  
-For full documentation, check [here](sdk.md).  
+Check out our javascript sdk [here](https://github.com/snowem/sdkjs/blob/master/js/app.js) for more details of using th sdk.  
+For full documentation, check [here](sdk.md).
 
 
 

@@ -1,6 +1,6 @@
 
 ### Online resources  
 
-Github repository of Snowem media server: https://github.com/snowem/snowem  
-Github repository of documentation: https://github.com/snowem/snowem-docs  
-JS examples: https://github.com/snowem/sdkjs  
+Github repository of [Snowem](https://github.com/snowem/snowem)  
+Github repository of [documentation](https://docs.snowem.io)  
+Learn by [example](https://github.com/snowem/sdkjs)  
